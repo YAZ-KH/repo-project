@@ -1,0 +1,30 @@
+import { execSync } from 'child_process';
+import { readdirSync, writeFileSync } from 'fs';
+
+const zipUrl = 'https://v0chat-agent-data-prod.s3.us-east-1.amazonaws.com/vm-binary/Hnc1EwqILxB/5e70a2aea0b52edafb74b5e3bdca674fca25b5cf2afd437b46ee03612b1895d9.zip?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIA52KF4VHQDTZ5RDMT%2F20260222%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260222T221805Z&X-Amz-Expires=3600&X-Amz-Signature=041c6d1891a2092121418a125f00e437baa4cfbccf931457cc713edeb9689c76&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject';
+
+// Download the zip
+console.log('Downloading ZIP file...');
+const response = await fetch(zipUrl);
+const buffer = Buffer.from(await response.arrayBuffer());
+writeFileSync('/home/user/project.zip', buffer);
+console.log('Downloaded ZIP file, size:', buffer.length, 'bytes');
+
+// Extract
+execSync('unzip -o /home/user/project.zip -d /home/user/extracted');
+console.log('Extracted successfully!');
+
+// List extracted files
+function listFiles(dir, prefix = '') {
+  const items = readdirSync(dir, { withFileTypes: true });
+  for (const item of items) {
+    const path = `${prefix}${item.name}`;
+    if (item.isDirectory()) {
+      console.log(`[DIR] ${path}/`);
+      listFiles(`${dir}/${item.name}`, `${path}/`);
+    } else {
+      console.log(`[FILE] ${path}`);
+    }
+  }
+}
+listFiles('/home/user/extracted');
